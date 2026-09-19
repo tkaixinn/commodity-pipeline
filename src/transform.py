@@ -1,12 +1,12 @@
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 def clean_commodity_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Cleans and validates raw commodity price data before loading into Postgres.
-    """
     df = df.copy()
+    summary = {}
 
-    # Rename columns to match Postgres schema
     df = df.rename(columns={
         "Date": "price_date",
         "Open": "open",
@@ -16,19 +16,36 @@ def clean_commodity_data(df: pd.DataFrame) -> pd.DataFrame:
         "Volume": "volume",
     })
 
-    # Keep only the columns we actually need
     df = df[["ticker", "price_date", "open", "high", "low", "close", "volume"]]
-
-    # Convert price_date to plain date (drop time/timezone info)
     df["price_date"] = pd.to_datetime(df["price_date"]).dt.date
 
-    # Data quality checks
-    before = len(df)
-    df = df.dropna(subset=["open", "high", "low", "close"])  # drop rows missing critical price data
-    df = df.drop_duplicates(subset=["ticker", "price_date"])  # avoid duplicate rows
-    after = len(df)
+    total_rows = len(df)
+    summary["total_rows_received"] = total_rows
 
-    if before != after:
-        print(f"Data quality check: dropped {before - after} invalid/duplicate rows")
+    # Check 1: missing critical price data
+    missing_price_mask = df[["open", "high", "low", "close"]].isna().any(axis=1)
+    summary["rows_missing_price_data"] = int(missing_price_mask.sum())
+    df = df[~missing_price_mask]
 
-    return df
+    # Check 2: negative or zero prices (invalid for commodities)
+    invalid_price_mask = (df[["open", "high", "low", "close"]] <= 0).any(axis=1)
+    summary["rows_with_invalid_prices"] = int(invalid_price_mask.sum())
+    df = df[~invalid_price_mask]
+
+    # Check 3: duplicate ticker+date combos
+    duplicate_mask = df.duplicated(subset=["ticker", "price_date"])
+    summary["duplicate_rows_dropped"] = int(duplicate_mask.sum())
+    df = df[~duplicate_mask]
+
+    summary["total_rows_clean"] = len(df)
+    summary["rows_dropped_total"] = total_rows - len(df)
+
+    logger.info(
+        f"Data quality summary: received={summary['total_rows_received']}, "
+        f"clean={summary['total_rows_clean']}, "
+        f"dropped_missing_price={summary['rows_missing_price_data']}, "
+        f"dropped_invalid_price={summary['rows_with_invalid_prices']}, "
+        f"dropped_duplicates={summary['duplicate_rows_dropped']}"
+    )
+
+    return df, summary

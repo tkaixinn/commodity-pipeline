@@ -8,6 +8,10 @@ TICKERS = {
 }
 
 def fetch_commodity_data(period="5d"):
+    """
+    Pulls historical price data for each ticker in TICKERS.
+    Returns a single combined DataFrame.
+    """
     all_data = []
 
     for ticker in TICKERS:

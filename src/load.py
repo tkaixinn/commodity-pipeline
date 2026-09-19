@@ -1,8 +1,10 @@
 import os
+import logging
 import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 def get_connection():
     return psycopg2.connect(
@@ -14,10 +16,6 @@ def get_connection():
     )
 
 def load_commodity_data(df):
-    """
-    Upserts commodity price rows into Postgres.
-    Uses ON CONFLICT to avoid duplicate rows on re-run.
-    """
     conn = get_connection()
     cur = conn.cursor()
 
@@ -39,7 +37,7 @@ def load_commodity_data(df):
     cur.executemany(insert_query, rows)
     conn.commit()
 
-    print(f"Loaded/updated {len(rows)} rows into commodity_prices")
+    logger.info(f"Loaded/updated {len(rows)} rows into commodity_prices")
 
     cur.close()
     conn.close()
