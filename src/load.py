@@ -43,11 +43,3 @@ def load_commodity_data(df):
 
     cur.close()
     conn.close()
-
-if __name__ == "__main__":
-    from ingest import fetch_commodity_data
-    from transform import clean_commodity_data
-
-    raw = fetch_commodity_data()
-    cleaned = clean_commodity_data(raw)
-    load_commodity_data(cleaned)

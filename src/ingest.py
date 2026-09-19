@@ -18,8 +18,3 @@ def fetch_commodity_data(period="5d"):
 
     combined = pd.concat(all_data, ignore_index=True)
     return combined
-
-if __name__ == "__main__":
-    data = fetch_commodity_data()
-    print(data.head())
-    print(f"\nTotal rows fetched: {len(data)}")

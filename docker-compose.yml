@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16
@@ -12,6 +10,18 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  pipeline:
+    build: .
+    container_name: commodity_pipeline
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: commodity_postgres
+      DB_PORT: 5432
+      DB_NAME: commodity_data
+      DB_USER: kaixin
+      DB_PASSWORD: localdevpassword
 
 volumes:
   pgdata:

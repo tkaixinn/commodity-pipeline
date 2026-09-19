@@ -32,10 +32,3 @@ def clean_commodity_data(df: pd.DataFrame) -> pd.DataFrame:
         print(f"Data quality check: dropped {before - after} invalid/duplicate rows")
 
     return df
-
-if __name__ == "__main__":
-    from ingest import fetch_commodity_data
-
-    raw = fetch_commodity_data()
-    cleaned = clean_commodity_data(raw)
-    print(cleaned)
