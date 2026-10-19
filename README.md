@@ -105,6 +105,21 @@ The pipeline will now run automatically every 10 minutes. To trigger a manual te
         kubectl create job --from=cronjob/commodity-pipeline manual-test
         kubectl logs -l job-name=manual-test
 
+## Running on AWS (EC2 + S3)
+
+The same pipeline also runs on AWS, scheduled with cron:
+
+    EC2 (Amazon Linux 2023)
+      cron, daily 01:00 UTC -> docker compose run pipeline
+            |-- yfinance -> pandas validation
+            |-- S3: raw/, clean/ and summaries/ files per run
+            '-- Postgres (container on the same instance)
+
+- **Archive:** every run writes the raw data, the cleaned data and the data quality summary to S3, under `raw/`, `clean/` and `summaries/` with the run date and timestamp in the key
+- **Permissions:** the instance uses an IAM role that can only write objects to the one bucket, so no access keys are stored on the server
+- **Failure behaviour:** if the S3 upload fails, the run still loads Postgres but exits non-zero so the failure shows up in the logs
+- **Config:** set `S3_BUCKET` in `.env`. If it's unset, the S3 step is skipped, so local and Kubernetes runs are unchanged
+
 ## Project structure
 
     commodity-pipeline/
