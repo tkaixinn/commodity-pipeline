@@ -116,6 +116,7 @@ The same pipeline also runs on AWS, scheduled with cron:
             '-- Postgres (container on the same instance)
 
 - **Archive:** every run writes the raw data, the cleaned data and the data quality summary to S3, under `raw/`, `clean/` and `summaries/` with the run date and timestamp in the key
+- **Report:** after archiving, the pipeline sends the computed stats (data quality summary, latest close and % change per commodity) to Amazon Bedrock (Nova 2 Lite), which writes a short plain-English status note to `reports/` in S3. Set `BEDROCK_MODEL_ID` in `.env` to enable it
 - **Permissions:** the instance uses an IAM role that can only write objects to the one bucket, so no access keys are stored on the server
 - **Failure behaviour:** if the S3 upload fails, the run still loads Postgres but exits non-zero so the failure shows up in the logs
 - **Config:** set `S3_BUCKET` in `.env`. If it's unset, the S3 step is skipped, so local and Kubernetes runs are unchanged
