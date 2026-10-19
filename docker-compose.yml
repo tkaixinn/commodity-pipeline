@@ -24,6 +24,7 @@ services:
       DB_PASSWORD: localdevpassword
       S3_BUCKET: ${S3_BUCKET:-}
       AWS_REGION: ap-southeast-1
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-}
 
 volumes:
   pgdata:
