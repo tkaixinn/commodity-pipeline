@@ -22,6 +22,8 @@ services:
       DB_NAME: commodity_data
       DB_USER: kaixin
       DB_PASSWORD: localdevpassword
+      S3_BUCKET: ${S3_BUCKET:-}
+      AWS_REGION: ap-southeast-1
 
 volumes:
   pgdata:
